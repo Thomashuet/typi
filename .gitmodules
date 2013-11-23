@@ -1,0 +1,6 @@
+[submodule "js_of_ocaml"]
+	path = js_of_ocaml
+	url = git@github.com:Thomashuet/js_of_ocaml.git
+[submodule "ace-builds"]
+	path = ace-builds
+	url = git@github.com:ajaxorg/ace-builds.git
