@@ -21,12 +21,21 @@
       color: white;
     }
     #input {
+      width: calc(100% - 2em);
       resize: none;
       border: 0 none;
       box-shadow: none;
       background-color: black;
       color: white;
       padding-top: 0;
+      float: left;
+    }
+    #prompt {
+      float: left;
+      margin: 0;
+    }
+    #output {
+      margin: 0;
     }
     </style>
   </head>
@@ -35,8 +44,8 @@
     <div id="editor"></div>
     <div id="toplevel">
       <pre id="output"></pre>
-      <div id="prompt"></div>
-      <textarea id="input" rows=1></textarea>
+      <pre id="prompt"></pre>
+      <textarea id="input" rows=1 onkeypress="key(event)"></textarea>
     </div>
     
     <script src="ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -50,18 +59,45 @@
     var invite = document.getElementById("prompt");
     var interpreter = new Worker("ocaml/toplevel.js");
     var ready = false;
+    var lines = 1;
 
-    function reset() {
-      interpreter.terminate();
-      interpreter = new Worker("ocaml/toplevel.js");
-    }
-
-    interpreter.onmessage = function(e) {
+    function onresponse(e) {
       if("out" in e.data)
         output.appendChild(document.createTextNode(e.data.out))
       if("ready" in e.data) {
         invite.innerHTML = e.data.ready;
         ready = true;
+        lines = 1;
+        input.rows = 1;
+        invite.style.display = "block";
+        input.style.display = "block";
+        input.value = "";
+      }
+    }
+
+    interpreter.onmessage = onresponse;
+
+    function reset() {
+      interpreter.terminate();
+      interpreter = new Worker("ocaml/toplevel.js");
+      output.value = "";
+      ready = false;
+      lines = 1;
+      interpreter.onmessage = onresponse;
+    }
+
+    function key(ev) {
+      if(ev.keyCode == 13 && ready) {
+        if(/;;/.test(input.value)) {
+          ready = false;
+          invite.style.display = "none";
+          input.style.display = "none";
+          interpreter.postMessage({"input": /[^;]*;;/.exec(input.value)});
+          input.value = "";
+        } else {
+          lines++;
+          input.rows = lines;
+        }
       }
     }
     </script>
