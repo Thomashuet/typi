@@ -11,6 +11,10 @@ var lines = 1;
 invite.style.display = "none";
 input.style.display = "none";
 
+var history = [];
+var h = [""];
+var pos = 0;
+
 function onresponse(e) {
   if("out" in e.data)
     output.appendChild(document.createTextNode(e.data.out))
@@ -23,6 +27,9 @@ function onresponse(e) {
     invite.style.display = "block";
     input.style.display = "block";
     input.value = "";
+    pos = history.length;
+    h = history.slice();
+    h.push("");
   }
 }
 
@@ -46,6 +53,9 @@ document.onkeypress = function(ev) {
 }
 
 function send(s) {
+  if(history.length < 1 || s !== history[history.length - 1]) {
+    history.push(s);
+  }
   ready = false;
   invite.style.display = "none";
   input.style.display = "none";
@@ -54,13 +64,33 @@ function send(s) {
 }
 
 function key(ev) {
-  if(ev.keyCode == 13 && ready) {
+  function timeTravel(delta) {
+    h[pos] = input.value;
+    pos += delta;
+    input.value = h[pos];
+    var m = h[pos].match(/\n/g);
+    if(m === null)
+      lines = 1
+    else
+      lines = m.length + 1;
+    input.rows = lines;
+  }
+  if(ev.keyCode == 13 && ready) { // ENTER
     if(/;;/.test(input.value)) {
-      send(/[^;]*;;/.exec(input.value));
+      send(/[^;]*;;/.exec(input.value)[0]);
     } else {
       lines++;
       input.rows = lines;
     }
+  } else if(ev.keyCode == 38 &&
+            pos > 0 &&
+            (input.value.indexOf("\n") < 0 ||
+             input.selectionStart <= input.value.indexOf("\n"))) { // UP
+    timeTravel(-1);
+  } else if(ev.keyCode == 40 &&
+            pos < history.length &&
+            input.selectionEnd > input.value.lastIndexOf("\n")) { // DOWN
+    timeTravel(1);
   }
 }
 
