@@ -7,7 +7,11 @@
   </head>
   <body>
 
-    <div id="editor" onkeypress="submit(event)"></div>
+    <div id="editor" onkeypress="submit(event)">(*
+Use CTRL + ENTER to execute current line,
+CTRL + SHIFT + ENTER to execute all file,
+CTRL + ESC to reset OCaml.
+*)</div>
     <div id="toplevel" onkeypress="key(event)">
       <pre id="output"></pre>
       <div id="other" onclick="document.getElementById('input').focus()">
