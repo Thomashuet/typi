@@ -12,6 +12,8 @@
       left: 0;
     }
     #toplevel { 
+      height: 100%;
+      width: 50%;
       position: absolute;
       top: 0;
       right: 0;
@@ -19,6 +21,7 @@
       left: 50%;
       background-color: black;
       color: white;
+      overflow: auto;
     }
     #input {
       width: calc(100% - 2em);
@@ -37,15 +40,20 @@
     #output {
       margin: 0;
     }
+    #other {
+      height: 100%;
+    }
     </style>
   </head>
   <body>
 
-    <div id="editor"></div>
+    <div id="editor" onkeypress="submit(event)"></div>
     <div id="toplevel">
       <pre id="output"></pre>
-      <pre id="prompt"></pre>
-      <textarea id="input" rows=1 onkeypress="key(event)"></textarea>
+      <div id="other" onclick="document.getElementById('input').focus()">
+        <pre id="prompt"></pre>
+        <textarea id="input" rows=1 onkeypress="key(event)"></textarea>
+      </div>
     </div>
     
     <script src="ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -86,17 +94,41 @@
       interpreter.onmessage = onresponse;
     }
 
+    function send(s) {
+      ready = false;
+      invite.style.display = "none";
+      input.style.display = "none";
+      interpreter.postMessage({"input": s});
+      input.value = "";
+    }
+
     function key(ev) {
       if(ev.keyCode == 13 && ready) {
         if(/;;/.test(input.value)) {
-          ready = false;
-          invite.style.display = "none";
-          input.style.display = "none";
-          interpreter.postMessage({"input": /[^;]*;;/.exec(input.value)});
-          input.value = "";
+          send(/[^;]*;;/.exec(input.value));
         } else {
           lines++;
           input.rows = lines;
+        }
+      }
+    }
+
+    function submit(ev) {
+      if(ev.keyCode == 13 && ev.ctrlKey) {
+        if(ev.shiftKey) {
+          send(editor.getValue());
+        } else {
+          var sentence = /[^;]*;;/g;
+          var i = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition());
+          var s = editor.getValue();
+          var cur = "";
+          while((res = sentence.exec(s)) !== null && res.index < i) {
+            cur = res[0];
+          }
+          cur = cur.replace(/^\s*/, "");
+          if(cur !== "") {
+            send(cur);
+          }
         }
       }
     }
