@@ -1,0 +1,39 @@
+#editor {
+  position: absolute;
+  top: 0;
+  right: 50%;
+  bottom: 0;
+  left: 0;
+}
+#toplevel {
+  height: 100%;
+  width: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 50%;
+  background-color: black;
+  color: white;
+  overflow: auto;
+}
+#input {
+  width: calc(100% - 2em);
+  resize: none;
+  border: 0 none;
+  box-shadow: none;
+  background-color: black;
+  color: white;
+  padding-top: 0;
+  float: left;
+}
+#prompt {
+  float: left;
+  margin: 0;
+}
+#output {
+  margin: 0;
+}
+#other {
+  height: 100%;
+}
