@@ -7,11 +7,19 @@
   </head>
   <body>
 
+    <div>
+      <button onclick="execute()" title="CTRL+ENTER">Execute</button>
+      <button onclick="executeAll()" title="CTRL+SHIFT+ENTER">Execute all</button>
+      <button onclick="save()" title="CTRL+S">Save</button>
+      <button onclick="reset()" title="CTRL+ESC" style="position: absolute; left: 50%">Reset</button>
+    </div>
+
     <div id="editor" onkeypress="submit(event)">(*
 Use CTRL + ENTER to execute current line,
 CTRL + SHIFT + ENTER to execute all file,
 CTRL + ESC to reset OCaml.
 *)</div>
+
     <div id="toplevel" onkeypress="key(event)">
       <pre id="output"></pre>
       <div id="other" onclick="document.getElementById('input').focus()">
@@ -19,6 +27,7 @@ CTRL + ESC to reset OCaml.
         <textarea id="input" rows=1></textarea>
       </div>
     </div>
+
     <div id="credit">Made by <a href="http://thomash.fr">Thomas HUET</a></div>
     
     <script src="editor/ace.js" type="text/javascript" charset="utf-8"></script>

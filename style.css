@@ -1,15 +1,16 @@
+body {
+  background-color: rgb(42,42,42);
+}
 #editor {
   position: absolute;
-  top: 0;
+  top: 30pt;
   right: 50%;
   bottom: 0;
   left: 0;
 }
 #toplevel {
-  height: 100%;
-  width: 50%;
   position: absolute;
-  top: 0;
+  top: 30pt;
   right: 0;
   bottom: 0;
   left: 50%;
