@@ -46,9 +46,16 @@ function reset() {
   interpreter.onmessage = onresponse;
 }
 
+function save() {
+  window.open("data:application/force-download;charset=utf-8," + encodeURIComponent(editor.getValue()), "file.ml");
+}
+
 document.onkeypress = function(ev) {
   if(ev.keyCode == 27 && ev.ctrlKey) {
     reset();
+  } else if(ev.charCode == 115 && ev.ctrlKey) {
+    save();
+    return false;
   }
 }
 
