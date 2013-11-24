@@ -37,3 +37,19 @@
 #other {
   height: 100%;
 }
+#credit {
+  font-size: x-small;
+  position: absolute;
+  bottom: 0;
+  z-index: 42;
+  background-color:rgba(255,255,255,0.5);
+  opacity: .5;
+}
+#credit:hover {
+  opacity: 1;
+}
+#credit a {
+  font-size: x-small;
+  text-decoration: underline;
+  color: black;
+}
