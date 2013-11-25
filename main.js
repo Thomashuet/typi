@@ -86,40 +86,8 @@ function send(s) {
   input.value = "";
 }
 
-function key(ev) {
-  function timeTravel(delta) {
-    h[pos] = input.value;
-    pos += delta;
-    input.value = h[pos];
-    var m = h[pos].match(/\n/g);
-    if(m === null)
-      lines = 1
-    else
-      lines = m.length + 1;
-    input.rows = lines;
-  }
-  if(ev.keyCode == 13 && ready) { // ENTER
-    if(/;;/.test(input.value)) {
-      send(/[^;]*(;[^;]+)*;;/.exec(input.value)[0]);
-    } else {
-      lines++;
-      input.rows = lines;
-    }
-  } else if(ev.keyCode == 38 &&
-            pos > 0 &&
-            (input.value.indexOf("\n") < 0 ||
-             input.selectionStart <= input.value.indexOf("\n"))) { // UP
-    timeTravel(-1);
-  } else if(ev.keyCode == 40 &&
-            pos < history.length &&
-            input.selectionEnd > input.value.lastIndexOf("\n")) { // DOWN
-    timeTravel(1);
-  }
-}
-
-function getSentences() {
+function getSentences(s) {
   var ans = [];
-  var s = editor.getValue();
   var i = 0;
   var j = 0;
   var comment = 0;
@@ -163,6 +131,38 @@ function getSentences() {
   return ans;
 }
 
+function key(ev) {
+  function timeTravel(delta) {
+    h[pos] = input.value;
+    pos += delta;
+    input.value = h[pos];
+    var m = h[pos].match(/\n/g);
+    if(m === null)
+      lines = 1
+    else
+      lines = m.length + 1;
+    input.rows = lines;
+  }
+  if(ev.keyCode == 13 && ready) { // ENTER
+    var sentences = getSentences(input.value);
+    if(sentences.length > 0) {
+      send(sentences[0].s);
+    } else {
+      lines++;
+      input.rows = lines;
+    }
+  } else if(ev.keyCode == 38 &&
+            pos > 0 &&
+            (input.value.indexOf("\n") < 0 ||
+             input.selectionStart <= input.value.indexOf("\n"))) { // UP
+    timeTravel(-1);
+  } else if(ev.keyCode == 40 &&
+            pos < history.length &&
+            input.selectionEnd > input.value.lastIndexOf("\n")) { // DOWN
+    timeTravel(1);
+  }
+}
+
 function test(sentences) {
   editor.getSession().setAnnotations([]);
   for(var i = 0; i < sentences.length; i++) {
@@ -171,7 +171,7 @@ function test(sentences) {
 }
 
 function executeAll() {
-  var sentences = getSentences();
+  var sentences = getSentences(editor.getValue());
   for(var i = 0; i < sentences.length; i++) {
     send(sentences[i].s);
   }
@@ -179,7 +179,7 @@ function executeAll() {
 }
 
 function execute() {
-  var sentences = getSentences();
+  var sentences = getSentences(editor.getValue());
   var cursor = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition());
   for(var i = 0; i < sentences.length; i++) {
     if(sentences[i].begin <= cursor && sentences[i].end >= cursor) {
