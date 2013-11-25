@@ -6,6 +6,8 @@ var input = document.getElementById("input");
 var output = document.getElementById("output");
 var invite = document.getElementById("prompt");
 var interpreter = new Worker("ocaml/toplevel.js");
+var tester = new Worker("ocaml/toplevel.js");
+var tooLong = false;
 var ready = false;
 var lines = 1;
 invite.style.display = "none";
@@ -18,6 +20,8 @@ var pos = 0;
 function onresponse(e) {
   if("out" in e.data)
     output.appendChild(document.createTextNode(e.data.out))
+  if("res" in e.data)
+    output.appendChild(document.createTextNode(e.data.res))
   if("ready" in e.data) {
     invite.innerHTML = e.data.ready;
     ready = true;
@@ -33,6 +37,17 @@ function onresponse(e) {
   }
 }
 
+function onresult(e) {
+  if("res" in e.data && (/^Error: /.test(e.data.res) ||
+                         /^Error: /.test(e.data.res))) {
+    var annot = editor.getSession().getAnnotations();
+    annot.push({"row": e.data.id, "text": e.data.res, "type": "error"});
+    editor.getSession().setAnnotations(annot);
+  }
+}
+
+tester.onmessage = onresult;
+
 interpreter.onmessage = onresponse;
 
 function reset() {
@@ -47,7 +62,8 @@ function reset() {
 }
 
 function save() {
-  window.open("data:application/force-download;charset=utf-8," + encodeURIComponent(editor.getValue()), "file.ml");
+  window.open("data:application/force-download;charset=utf-8,"
+             +encodeURIComponent(editor.getValue()));
 }
 
 document.onkeypress = function(ev) {
@@ -66,7 +82,7 @@ function send(s) {
   ready = false;
   invite.style.display = "none";
   input.style.display = "none";
-  interpreter.postMessage({"input": s});
+  interpreter.postMessage({"req": s, "id": 0});
   input.value = "";
 }
 
@@ -101,28 +117,77 @@ function key(ev) {
   }
 }
 
-function executeAll() {
-  var sentence = /[^;]*(;[^;]+)*;;/g;
+function getSentences() {
+  var ans = [];
   var s = editor.getValue();
-  while((res = sentence.exec(s)) !== null) {
-    send(res[0].replace(/^\s*/, ""));
+  var i = 0;
+  var j = 0;
+  var comment = 0;
+  var row = 0;
+  var r = 0;
+  while(i < s.length) {
+    if(s[i] == '(' && i+1 < s.length && s[i+1] == '*') {
+      comment++;
+      i += 2;
+    } else if(comment > 0 && s[i] == '*' && i+1 < s.length && s[i+1] == ')') {
+      comment--;
+      i += 2;
+    } else if(s[i] == '\n') {
+      row++;
+      i++;
+    } else if(comment > 0 || /\s/.test(s[i])) {
+      i++;
+    } else {
+      j = i;
+      r = row;
+      while(j < s.length -1 && (comment > 0 || s[j] !== ';' || s[j+1] !== ';')) {
+	if(s[j] == '(' && s[j+1] == '*') {
+	  comment++;
+	  j += 2;
+	} else if(comment > 0 && s[j] == '*' && s[j+1] == ')') {
+	  comment--;
+	  j += 2;
+	} else if(s[j] == '\n') {
+	  row++;
+	  j++;
+        } else {
+          j++;
+        }
+      }
+      if(j < s.length - 1) {
+        ans.push({"row": r, "s": s.slice(i, j+2), "begin": i, "end": j+2});
+      }
+      i = j+2;
+    }
+  }
+  return ans;
+}
+
+function test(sentences) {
+  editor.getSession().setAnnotations([]);
+  for(var i = 0; i < sentences.length; i++) {
+    tester.postMessage({"req": sentences[i].s, "id": sentences[i].row});
   }
 }
 
+function executeAll() {
+  var sentences = getSentences();
+  for(var i = 0; i < sentences.length; i++) {
+    send(sentences[i].s);
+  }
+  test(sentences);
+}
+
 function execute() {
-  var sentence = /[^;]*(;[^;]+)*;;/g;
-  var i = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition());
-  if(i == 0)
-    i = 1;
-  var s = editor.getValue();
-  var cur = "";
-  while((res = sentence.exec(s)) !== null && res.index < i) {
-    cur = res[0];
+  var sentences = getSentences();
+  var cursor = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition());
+  for(var i = 0; i < sentences.length; i++) {
+    if(sentences[i].begin <= cursor && sentences[i].end >= cursor) {
+      send(sentences[i].s);
+      i = sentences.length;
+    } 
   }
-  cur = cur.replace(/^\s*/, "");
-  if(cur !== "") {
-    send(cur);
-  }
+  test(sentences);
 }
 
 function submit(ev) {
