@@ -84,7 +84,7 @@ function key(ev) {
   }
   if(ev.keyCode == 13 && ready) { // ENTER
     if(/;;/.test(input.value)) {
-      send(/[^;]*;;/.exec(input.value)[0]);
+      send(/[^;]*(;[^;]+)*;;/.exec(input.value)[0]);
     } else {
       lines++;
       input.rows = lines;
@@ -102,7 +102,7 @@ function key(ev) {
 }
 
 function executeAll() {
-  var sentence = /[^;]*;;/g;
+  var sentence = /[^;]*(;[^;]+)*;;/g;
   var s = editor.getValue();
   while((res = sentence.exec(s)) !== null) {
     send(res[0].replace(/^\s*/, ""));
@@ -110,8 +110,10 @@ function executeAll() {
 }
 
 function execute() {
-  var sentence = /[^;]*;;/g;
+  var sentence = /[^;]*(;[^;]+)*;;/g;
   var i = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition());
+  if(i == 0)
+    i = 1;
   var s = editor.getValue();
   var cur = "";
   while((res = sentence.exec(s)) !== null && res.index < i) {
