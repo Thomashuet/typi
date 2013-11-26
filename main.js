@@ -1,14 +1,25 @@
+var argv = location.search.replace(/[\?\/]/g, '').split('&');
+var params = {
+  "tuto": "ocaml-example.html",
+  "lang": "ocaml"
+};
+for(var i = 0; i < argv.length; i++) {
+  var a = argv[i].split('=');
+  params[a[0]] = a[1];
+};
+
 var editor = ace.edit("editor");
 editor.setTheme("ace/theme/monokai");
-editor.getSession().setMode("ace/mode/ocaml");
+editor.getSession().setMode("ace/mode/" + params.lang);
 
 var tp = document.getElementById("tp");
 
 var input = document.getElementById("input");
 var output = document.getElementById("output");
 var invite = document.getElementById("prompt");
-var interpreter = new Worker("ocaml/toplevel.js");
-var tester = new Worker("ocaml/toplevel.js");
+var worker = params.lang + "-worker.js";
+var interpreter = new Worker(worker);
+var tester = new Worker(worker);
 var tooLong = false;
 var ready = false;
 var lines = 1;
@@ -64,7 +75,7 @@ function onresult(e) {
 
 function reset() {
   interpreter.terminate();
-  interpreter = new Worker("ocaml/toplevel.js");
+  interpreter = new Worker(worker);
   output.innerHTML = "";
   ready = false;
   lines = 1;
@@ -74,7 +85,7 @@ function reset() {
 }
 
 function save() {
-  window.open("data:application/force-download;charset=utf-8,"
+  window.open("data:text/x-ocaml;charset=utf-8,"
              +encodeURIComponent(editor.getValue()));
 }
 
@@ -180,7 +191,7 @@ function key(ev) {
 
 function test(sentences) {
   tester.terminate();
-  tester = new Worker("ocaml/toplevel.js");
+  tester = new Worker(worker);
   tester.onmessage = onresult;
   editor.getSession().setAnnotations([]);
   for(var i = 0; i < sentences.length; i++) {
@@ -257,7 +268,7 @@ function openFile(file) {
       codes[i].style.height = 14 * loc + "px";
       var code = ace.edit(codes[i]);
       code.setTheme("ace/theme/monokai");
-      code.getSession().setMode("ace/mode/ocaml");
+      code.getSession().setMode("ace/mode/" + params.lang);
       code.setReadOnly(true);
       code.renderer.setShowGutter(false);
       function click(code) {
@@ -272,13 +283,4 @@ function openFile(file) {
   };
 }
 
-var argv = location.search.replace(/[\?\/]/g, '').split('&');
-var params = {
-  "tuto": "example.html",
-  "lang": "OCaml"
-};
-for(var i = 0; i < argv.length; i++) {
-  var a = argv[i].split('=');
-  params[a[0]] = a[1];
-};
 openFile(params.tuto);
