@@ -8,11 +8,20 @@
   <body>
 
     <div>
-      <button onclick="execute()" title="CTRL+ENTER">Execute</button>
-      <button onclick="executeAll()" title="CTRL+SHIFT+ENTER">Execute all</button>
-      <button onclick="save()" title="CTRL+S">Save</button>
-      <button onclick="reset()" title="CTRL+ESC" style="position: absolute; left: 50%">Reset</button>
+      <div id="tp-buttons">
+        <button onclick="openFile(pickFile())" title="CTRL+O">Open</button>
+      </div>
+      <div id="editor-buttons">
+        <button onclick="execute()" title="CTRL+ENTER">Execute</button>
+        <button onclick="executeAll()" title="CTRL+SHIFT+ENTER">Execute all</button>
+        <button onclick="save()" title="CTRL+S">Save</button>
+      </div>
+      <div id="toplevel-buttons">
+        <button onclick="reset()" title="CTRL+ESC">Reset</button>
+      </div>
     </div>
+
+    <div id="tp"></div>
 
     <div id="editor" onkeypress="submit(event)"></div>
 

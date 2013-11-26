@@ -1,23 +1,56 @@
 body {
   background-color: rgb(42,42,42);
 }
+
+#tp-buttons {
+  position: absolute;
+  left: 0;
+}
+
+#editor-buttons {
+  position: absolute;
+  left: 40%;
+}
+
+#toplevel-buttons {
+  position: absolute;
+  left: 70%;
+}
+
+#tp {
+  position: absolute;
+  top: 30pt;
+  width: calc(40% - 20px);
+  bottom: 0;
+  left: 0;
+  background-color: white;
+  overflow: auto;
+  padding: 0 10px;
+}
+
+#tp pre {
+  width: 90%;
+}
+
 #editor {
   position: absolute;
   top: 30pt;
-  right: 50%;
+  left: 40%;
   bottom: 0;
-  left: 0;
+  width: 30%;
 }
+
 #toplevel {
   position: absolute;
   top: 30pt;
-  right: 0;
+  left: 70%;
   bottom: 0;
-  left: 50%;
+  width: 30%;
   background-color: black;
   color: white;
   overflow: auto;
 }
+
 #input {
   width: calc(100% - 2em);
   resize: none;
@@ -28,27 +61,34 @@ body {
   padding-top: 0;
   float: left;
 }
+
 #prompt {
   float: left;
   margin: 0;
 }
+
 #output {
   margin: 0;
 }
+
 #other {
   height: 100%;
 }
+
 #credit {
   font-size: x-small;
   position: absolute;
   bottom: 0;
+  right: 2em;
   z-index: 42;
   background-color:rgba(255,255,255,0.5);
   opacity: .5;
 }
+
 #credit:hover {
   opacity: 1;
 }
+
 #credit a {
   font-size: x-small;
   text-decoration: underline;

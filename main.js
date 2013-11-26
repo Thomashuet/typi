@@ -2,6 +2,8 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/monokai");
 editor.getSession().setMode("ace/mode/ocaml");
 
+var tp = document.getElementById("tp");
+
 var input = document.getElementById("input");
 var output = document.getElementById("output");
 var invite = document.getElementById("prompt");
@@ -37,6 +39,8 @@ function onresponse(e) {
   }
 }
 
+interpreter.onmessage = onresponse;
+
 function onresult(e) {
   if("res" in e.data && (/^Error: /.test(e.data.res) ||
                          /^Error: /.test(e.data.res))) {
@@ -45,10 +49,6 @@ function onresult(e) {
     editor.getSession().setAnnotations(annot);
   }
 }
-
-tester.onmessage = onresult;
-
-interpreter.onmessage = onresponse;
 
 function reset() {
   interpreter.terminate();
@@ -71,6 +71,9 @@ document.onkeypress = function(ev) {
     reset();
   } else if(ev.charCode == 115 && ev.ctrlKey) {
     save();
+    return false;
+  } else if(ev.charCode == 111 && ev.ctrlKey) {
+    openFile(pickFile());
     return false;
   }
 }
@@ -164,6 +167,9 @@ function key(ev) {
 }
 
 function test(sentences) {
+  tester.terminate();
+  tester = new Worker("ocaml/toplevel.js");
+  tester.onmessage = onresult;
   editor.getSession().setAnnotations([]);
   for(var i = 0; i < sentences.length; i++) {
     tester.postMessage({"req": sentences[i].s, "id": sentences[i].row});
@@ -181,12 +187,15 @@ function executeAll() {
 function execute() {
   var sentences = getSentences(editor.getValue());
   var cursor = editor.getSession().getDocument().positionToIndex(editor.getCursorPosition());
-  for(var i = 0; i < sentences.length; i++) {
+  var notDone = true;
+  for(var i = 0; notDone && i < sentences.length; i++) {
     if(sentences[i].begin <= cursor && sentences[i].end >= cursor) {
       send(sentences[i].s);
-      i = sentences.length;
+      notDone = false;
     } 
   }
+  if(notDone && sentences.length > 0)
+    send(sentences[sentences.length - 1].s);
   test(sentences);
 }
 
@@ -200,3 +209,50 @@ function submit(ev) {
   }
 }
 
+function pickFile() {
+  var file = prompt("Enter the URL of the file");
+  if(!(/^http:\/\//.test(file) || /^https:\/\//.test(file) || /^ftp:\/\//.test(file)))
+    file = "http://" + file;
+  return file;
+}
+
+function openFile(file) {
+  if(file === null)
+    return;
+  var req = new XMLHttpRequest();
+  req.open("GET", file, true);
+  req.send();
+  req.onload = function() {
+    tp.innerHTML = req.responseText;
+    var codes = tp.getElementsByTagName("pre");
+    for(var i = 0; i < codes.length; i++) {
+      var m = codes[i].textContent.match(/\n/g);
+      var loc = 1;
+      if(m !== null)
+        loc += m.length;
+      codes[i].style.height = 14 * loc + "px";
+      var code = ace.edit(codes[i]);
+      code.setTheme("ace/theme/monokai");
+      code.getSession().setMode("ace/mode/ocaml");
+      code.setReadOnly(true);
+      code.renderer.setShowGutter(false);
+      function click(code) {
+        return function() {
+          editor.insert(code.getValue() + '\n');
+        }
+      }
+      codes[i].onclick = click(code);
+    }
+  };
+}
+
+var argv = location.search.replace(/[\?\/]/g, '').split('&');
+var params = {
+  "tp": "example.html",
+  "lang": "OCaml"
+};
+for(var i = 0; i < argv.length; i++) {
+  var a = argv[i].split('=');
+  params[a[0]] = a[1];
+};
+openFile(params.tp);
