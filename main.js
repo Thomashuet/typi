@@ -12,6 +12,17 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/monokai");
 editor.getSession().setMode("ace/mode/" + params.lang);
 
+var unsaved = false;
+editor.on("change", function() {unsaved = true;});
+
+window.addEventListener("beforeunload", function (e) {
+  if(unsaved) {
+    var confirmationMessage = "You have unsaved modifications.";
+    (e || window.event).returnValue = confirmationMessage;
+    return confirmationMessage;
+  }
+});
+
 var tp = document.getElementById("tp");
 
 var input = document.getElementById("input");
@@ -87,6 +98,7 @@ function reset() {
 function save() {
   window.open("data:text/x-ocaml;charset=utf-8,"
              +encodeURIComponent(editor.getValue()));
+  unsaved = false;
 }
 
 document.onkeypress = function(ev) {
