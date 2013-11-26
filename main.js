@@ -235,6 +235,7 @@ function pickFile() {
 function openFile(file) {
   if(file === null)
     return;
+  file = decodeURIComponent(file);
   var req = new XMLHttpRequest();
   req.open("GET", file, true);
   req.send();
@@ -273,11 +274,11 @@ function openFile(file) {
 
 var argv = location.search.replace(/[\?\/]/g, '').split('&');
 var params = {
-  "tp": "example.html",
+  "tuto": "example.html",
   "lang": "OCaml"
 };
 for(var i = 0; i < argv.length; i++) {
   var a = argv[i].split('=');
   params[a[0]] = a[1];
 };
-openFile(params.tp);
+openFile(params.tuto);
