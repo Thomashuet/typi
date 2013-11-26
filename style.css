@@ -4,23 +4,23 @@ body {
 
 #tp-buttons {
   position: absolute;
-  left: 0;
+  left: 1em;
 }
 
 #editor-buttons {
   position: absolute;
-  left: 40%;
+  left: calc(50% + 1em);
 }
 
 #toplevel-buttons {
   position: absolute;
-  left: 70%;
+  right: 1em;
 }
 
 #tp {
   position: absolute;
   top: 30pt;
-  width: calc(40% - 20px);
+  width: calc(50% - 20px);
   bottom: 0;
   left: 0;
   background-color: white;
@@ -31,17 +31,17 @@ body {
 #editor {
   position: absolute;
   top: 30pt;
-  left: 40%;
-  bottom: 0;
-  width: 30%;
+  right: 0;
+  width: 50%;
+  height: 60%;
 }
 
 #toplevel {
   position: absolute;
-  top: 30pt;
-  left: 70%;
+  top: calc(30pt + 60%);
   bottom: 0;
-  width: 30%;
+  right: 0;
+  width: 50%;
   background-color: black;
   color: white;
   overflow: auto;
