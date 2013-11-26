@@ -19,6 +19,9 @@ var history = [];
 var h = [""];
 var pos = 0;
 
+var questions = [];
+var toValidate = [];
+
 function onresponse(e) {
   if("out" in e.data)
     output.appendChild(document.createTextNode(e.data.out))
@@ -42,11 +45,20 @@ function onresponse(e) {
 interpreter.onmessage = onresponse;
 
 function onresult(e) {
+  console.log(e.data);
   if("res" in e.data && (/^Error: /.test(e.data.res) ||
                          /^Error: /.test(e.data.res))) {
     var annot = editor.getSession().getAnnotations();
     annot.push({"row": e.data.id, "text": e.data.res, "type": "error"});
     editor.getSession().setAnnotations(annot);
+  } else if("res" in e.data && e.data.id < 0 && e.data.res === "- : bool = true\n") {
+    var q = toValidate[-1-e.data.id].question;
+    toValidate.splice(-1-e.data.id, 1)
+    var onlyOne = true;
+    for(var i = 0; i < toValidate.length; i++)
+      onlyOne = onlyOne && toValidate[i].question !== q;
+    if(onlyOne)
+      questions[q].style.backgroundColor = "#D0FFD0";
   }
 }
 
@@ -174,6 +186,10 @@ function test(sentences) {
   for(var i = 0; i < sentences.length; i++) {
     tester.postMessage({"req": sentences[i].s, "id": sentences[i].row});
   }
+  for(var i = 0; i < toValidate.length; i++) {
+    tester.postMessage({"req": toValidate[i].test, "id": -1-i});
+  }
+  console.log("tests sent");
 }
 
 function executeAll() {
@@ -224,6 +240,13 @@ function openFile(file) {
   req.send();
   req.onload = function() {
     tp.innerHTML = req.responseText;
+    questions = tp.getElementsByClassName("question");
+    for(var i = 0; i < questions.length; i++) {
+      var t = questions[i].getElementsByClassName("test");
+      for(var j = 0; j < t.length; j++) {
+        toValidate.push({"test": t[j].textContent, "question": i});
+      }
+    }
     var codes = tp.getElementsByTagName("pre");
     for(var i = 0; i < codes.length; i++) {
       var m = codes[i].textContent.match(/\n/g);
@@ -241,7 +264,9 @@ function openFile(file) {
           editor.insert(code.getValue() + '\n');
         }
       }
-      codes[i].onclick = click(code);
+      codes[i].ondblclick = click(code);
+      if(codes[i].classList.contains("test"))
+        codes[i].style.display = "none";
     }
   };
 }

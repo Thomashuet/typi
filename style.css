@@ -28,10 +28,6 @@ body {
   padding: 0 10px;
 }
 
-#tp pre {
-  width: 90%;
-}
-
 #editor {
   position: absolute;
   top: 30pt;
