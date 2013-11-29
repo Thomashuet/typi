@@ -96,7 +96,7 @@ function reset() {
 }
 
 function save() {
-  window.open("data:text/x-ocaml;charset=utf-8,"
+  window.open("data:text/x-" + params.lang + ";charset=utf-8,"
              +encodeURIComponent(editor.getValue()));
   unsaved = false;
 }
@@ -272,12 +272,13 @@ function openFile(file) {
       }
     }
     var codes = tp.getElementsByTagName("pre");
+    var lineHeight = document.getElementsByClassName("ace_line")[0].style.height;
     for(var i = 0; i < codes.length; i++) {
       var m = codes[i].textContent.match(/\n/g);
       var loc = 1;
       if(m !== null)
         loc += m.length;
-      codes[i].style.height = 14 * loc + "px";
+      codes[i].style.height = "calc(" + loc + "*" + lineHeight + ")";
       var code = ace.edit(codes[i]);
       code.setTheme("ace/theme/monokai");
       code.getSession().setMode("ace/mode/" + params.lang);
