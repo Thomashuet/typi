@@ -45,10 +45,14 @@ var questions = [];
 var toValidate = [];
 
 function onresponse(e) {
-  if("out" in e.data)
+  if("out" in e.data) {
     output.appendChild(document.createTextNode(e.data.out))
-  if("res" in e.data)
+    output.scrollIntoView(false);
+  }
+  if("res" in e.data) {
     output.appendChild(document.createTextNode(e.data.res))
+    output.scrollIntoView(false);
+  }
   if("ready" in e.data) {
     invite.innerHTML = e.data.ready;
     ready = true;
@@ -61,6 +65,7 @@ function onresponse(e) {
     pos = history.length;
     h = history.slice();
     h.push("");
+    input.scrollIntoView(false);
   }
 }
 
@@ -101,6 +106,20 @@ function save() {
   unsaved = false;
 }
 
+var focus = "tp";
+
+tp.onclick = function(ev) {
+  focus = "tp";
+}
+
+document.getElementById("editor").onclick = function(ev) {
+  focus = "editor";
+}
+
+document.getElementById("toplevel").onclick = function(ev) {
+  focus = "toplevel";
+}
+
 document.onkeypress = function(ev) {
   if(ev.keyCode == 27 && ev.ctrlKey) {
     reset();
@@ -110,6 +129,10 @@ document.onkeypress = function(ev) {
   } else if(ev.charCode == 111 && ev.ctrlKey) {
     openFile(pickFile());
     return false;
+  } else if(focus === "editor") {
+    keyEditor(ev);
+  } else if(focus === "toplevel") {
+    keyToplevel(ev);
   }
 }
 
@@ -169,7 +192,7 @@ function getSentences(s) {
   return ans;
 }
 
-function key(ev) {
+function keyToplevel(ev) {
   function timeTravel(delta) {
     h[pos] = input.value;
     pos += delta;
@@ -181,6 +204,8 @@ function key(ev) {
       lines = m.length + 1;
     input.rows = lines;
   }
+  if(!ev.ctrlKey)
+    input.focus();
   if(ev.keyCode == 13 && ready) { // ENTER
     var sentences = getSentences(input.value);
     if(sentences.length > 0) {
@@ -238,7 +263,7 @@ function execute() {
   test(sentences);
 }
 
-function submit(ev) {
+function keyEditor(ev) {
   if(ev.keyCode == 13 && ev.ctrlKey) {
     if(ev.shiftKey) {
       executeAll();
