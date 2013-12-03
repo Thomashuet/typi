@@ -72,7 +72,6 @@ function onresponse(e) {
 interpreter.onmessage = onresponse;
 
 function onresult(e) {
-  console.log(e.data);
   if("res" in e.data && (/^Error: /.test(e.data.res) ||
                          /^Error: /.test(e.data.res))) {
     var annot = editor.getSession().getAnnotations();
@@ -237,7 +236,6 @@ function test(sentences) {
   for(var i = 0; i < toValidate.length; i++) {
     tester.postMessage({"req": toValidate[i].test, "id": -1-i});
   }
-  console.log("tests sent");
 }
 
 function executeAll() {
