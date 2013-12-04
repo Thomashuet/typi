@@ -93,6 +93,7 @@ function onresult(e) {
 
 function reset() {
   interpreter.terminate();
+  tester.terminate();
   interpreter = new Worker(worker);
   output.innerHTML = "";
   ready = false;
