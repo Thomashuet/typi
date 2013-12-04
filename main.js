@@ -82,10 +82,10 @@ function onresult(e) {
     editor.getSession().setAnnotations(annot);
   } else if("res" in e.data && e.data.id < 0 && e.data.res === "- : bool = true\n") {
     var q = toValidate[-1-e.data.id].question;
-    toValidate.splice(-1-e.data.id, 1)
+    toValidate[-1-e.data.id] = null;
     var onlyOne = true;
     for(var i = 0; i < toValidate.length; i++)
-      onlyOne = onlyOne && toValidate[i].question !== q;
+      onlyOne = onlyOne && (toValidate[i] === null || toValidate[i].question !== q);
     if(onlyOne)
       questions[q].style.backgroundColor = "#D0FFD0";
   }
@@ -237,7 +237,8 @@ function test(sentences) {
     tester.postMessage({"req": sentences[i].s, "id": sentences[i].row});
   }
   for(var i = 0; i < toValidate.length; i++) {
-    tester.postMessage({"req": toValidate[i].test, "id": -1-i});
+    if(toValidate[i] !== null)
+      tester.postMessage({"req": toValidate[i].test, "id": -1-i});
   }
 }
 
