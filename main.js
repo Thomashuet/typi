@@ -7,6 +7,9 @@ for(var i = 0; i < argv.length; i++) {
   var a = argv[i].split('=');
   params[a[0]] = a[1];
 };
+if("tp" in params) {
+  params.tuto = "tp%2F" + params.tp;
+};
 
 var editor = ace.edit("editor");
 editor.setTheme("ace/theme/monokai");
@@ -294,28 +297,49 @@ function openFile(file) {
         toValidate.push({"test": t[j].textContent, "question": i});
       }
     }
-    var codes = tp.getElementsByTagName("pre");
+    var pre = tp.getElementsByTagName("pre");
     var lineHeight = document.getElementsByClassName("ace_line")[0].style.height;
-    for(var i = 0; i < codes.length; i++) {
-      var m = codes[i].textContent.match(/\n/g);
+    for(var i = 0; i < pre.length; i++) {
+      var m = pre[i].textContent.match(/\n/g);
       var loc = 1;
       if(m !== null)
         loc += m.length;
-      codes[i].style.height = "calc(" + loc + "*" + lineHeight + ")";
-      var code = ace.edit(codes[i]);
-      code.setTheme("ace/theme/monokai");
-      code.getSession().setMode("ace/mode/" + params.lang);
-      code.setReadOnly(true);
-      code.renderer.setShowGutter(false);
-      function click(code) {
+      pre[i].style.height = "calc(" + loc + "*" + lineHeight + ")";
+      var edit = ace.edit(pre[i]);
+      edit.setTheme("ace/theme/monokai");
+      edit.getSession().setMode("ace/mode/" + params.lang);
+      edit.setReadOnly(true);
+      edit.renderer.setShowGutter(false);
+      function click(edit) {
         return function() {
-          editor.insert(code.getValue() + '\n');
+          editor.insert(edit.getValue() + '\n');
         }
       }
-      codes[i].ondblclick = click(code);
-      if(codes[i].classList.contains("test"))
-        codes[i].style.display = "none";
+      pre[i].ondblclick = click(edit);
     }
+    var code = tp.getElementsByTagName("code");
+    var charWidth = "6px";
+    for(var i = 0; i < code.length; i++) {
+      var w = code[i].clientWidth;
+      var n = code[i].textContent.length;
+      code[i].style.height = lineHeight;
+      code[i].style.width = "calc((" + n + "*" + charWidth + ") + 1em)";
+      code[i].style.display = "inline-block";
+      var edit = ace.edit(code[i]);
+      edit.setTheme("ace/theme/monokai");
+      edit.getSession().setMode("ace/mode/" + params.lang);
+      edit.setReadOnly(true);
+      edit.renderer.setShowGutter(false);
+      function click(edit) {
+        return function() {
+          editor.insert(edit.getValue() + '\n');
+        }
+      }
+      code[i].ondblclick = click(edit);
+    }
+    var test = tp.getElementsByClassName("test");
+    for(var i = 0; i < test.length; i++)
+      test[i].style.display = "none";
   };
 }
 
